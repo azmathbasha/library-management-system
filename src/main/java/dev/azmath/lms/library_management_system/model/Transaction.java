@@ -13,6 +13,11 @@ import java.time.LocalDate;
 @Data
 public class Transaction {
 
+    public Transaction(Book book, Member member, LocalDate now) {
+        this.book = book;
+        this.member = member;
+        this.borrowDate = now;
+    }
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long transactionID;
