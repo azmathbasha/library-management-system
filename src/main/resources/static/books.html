@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <title>Manage Books</title>
+</head>
+<body>
+    <div class="management-panel">
+        <h3>Manage Books</h3>
+        <button onclick="location.href='books.html'">Manage Books</button>
+
+        <h3>Manage Members</h3>
+        <button onclick="location.href='members.html'">Manage Members</button>
+    </div>
+    <h2>Manage Books</h2>
+    <form id="addBookForm">
+        <input type="text" id="title" placeholder="Book Title" required>
+        <input type="text" id="author" placeholder="Author" required>
+        <input type="text" id="isbn" placeholder="ISBN" required>
+        <button type="submit">Add Book</button>
+    </form>
+
+    <h3>Book List</h3>
+    <table class="table" id="bookTable">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Title</th>
+                <th>Author</th>
+                <th>ISBN</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody id="bookList"></tbody>
+    </table>
+
+    <script>
+        async function loadBooks() {
+            const response = await fetch('/api/books');
+            const data = await response.json();
+            const bookList = document.getElementById("bookList");
+            bookList.innerHTML = '';
+
+            data._embedded.books.forEach(book => {
+                bookList.innerHTML += `
+                    <tr>
+                        <td>${book.id}</td>
+                        <td>${book.title}</td>
+                        <td>${book.author}</td>
+                        <td>${book.isbn}</td>
+                        <td>
+                            <button onclick="deleteBook(${book.id})">Delete</button>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        document.getElementById("addBookForm").addEventListener("submit", async function(event) {
+            event.preventDefault();
+            const title = document.getElementById("title").value;
+            const author = document.getElementById("author").value;
+            const isbn = document.getElementById("isbn").value;
+
+            await fetch('/api/books', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ title, author, isbn })
+            });
+
+            loadBooks();
+        });
+
+        async function deleteBook(id) {
+            await fetch('/api/books' + id, { method: 'DELETE' });
+            loadBooks();
+        }
+
+        // Load books on page load
+        window.onload = loadBooks;
+    </script>
+</body>
+</html>

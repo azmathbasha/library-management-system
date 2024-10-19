@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <title>Manage Members</title>
+</head>
+<body>
+    <div class="management-panel">
+        <h3>Manage Books</h3>
+        <button onclick="location.href='books.html'">Manage Books</button>
+
+        <h3>Manage Members</h3>
+        <button onclick="location.href='members.html'">Manage Members</button>
+    </div>
+    <h2>Manage Members</h2>
+    <form id="addMemberForm">
+        <input type="text" id="name" placeholder="Member Name" required>
+        <input type="email" id="email" placeholder="Email" required>
+        <button type="submit">Add Member</button>
+    </form>
+
+    <h3>Member List</h3>
+    <table class="table" id="memberTable">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody id="memberList"></tbody>
+    </table>
+
+    <script>
+        async function loadMembers() {
+            const response = await fetch('/api/members');
+            const data = await response.json();
+            const memberList = document.getElementById("memberList");
+            memberList.innerHTML = '';
+
+            data._embedded.members.forEach(member => {
+                memberList.innerHTML += `
+                    <tr>
+                        <td>${member.id}</td>
+                        <td>${member.name}</td>
+                        <td>${member.email}</td>
+                        <td>
+                            <button onclick="deleteMember(${member.id})">Delete</button>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        document.getElementById("addMemberForm").addEventListener("submit", async function(event) {
+            event.preventDefault();
+            const name = document.getElementById("name").value;
+            const email = document.getElementById("email").value;
+
+            await fetch('/api/members', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ name, email })
+            });
+
+            loadMembers();
+        });
+
+        async function deleteMember(id) {
+            await fetch('/api/members' + id, { method: 'DELETE' });
+            loadMembers();
+        }
+
+        // Load members on page load
+        window.onload = loadMembers;
+    </script>
+</body>
+</html>
